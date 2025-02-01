@@ -1,0 +1,67 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin" // Flutter Gradle Plugin
+}
+
+android {
+    namespace = "com.example.speakify_app" // Matches your package name
+    compileSdk = 34 // Compile SDK version
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17 // Use Java 17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17" // Match Java 11
+    }
+
+    defaultConfig {
+        applicationId = "com.example.speakify_app" // Application package name
+        minSdk = 21 // Minimum supported SDK version
+        targetSdk = 34 // Target SDK version
+        versionCode flutter.versionCode.toInteger() // Automatically fetch versionCode from Flutter
+        versionName flutter.versionName // Automatically fetch versionName from Flutter
+    }
+
+    // Load keystore properties
+    def keystoreProperties = new Properties()
+    def keystorePropertiesFile = rootProject.file("key.properties")
+    if (keystorePropertiesFile.exists()) {
+        keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+    }
+
+    signingConfigs {
+        debug {
+            // Default debug signing config
+        }
+        release {
+            storeFile file('C:\\Users\\Ralph\\speakify_app\\android/release.keystore')  // Path to your new keystore
+            storePassword 'ralph eco'  // Keystore password
+            keyAlias 'speakify'  // Alias name
+            keyPassword 'ralph eco'  // Alias password
+         }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.debug // Use debug signing for development
+        }
+        release {
+            signingConfig signingConfigs.release // Use release signing for production
+            minifyEnabled false // Disable code minification
+            shrinkResources false // Disable resource shrinking
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    lintOptions {
+        disable 'InvalidPackage' // Suppress invalid package warnings
+        checkReleaseBuilds false // Disable lint checks for release builds
+    }
+}
+
+flutter {
+    source = "../.." // Path to Flutter module source
+}
