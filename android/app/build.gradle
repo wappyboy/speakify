@@ -1,3 +1,9 @@
+buildscript {
+    dependencies {
+        classpath "com.android.tools.build:gradle:8.2.0" // Ensure AGP 8.2.0 or later is used
+    }
+}
+
 plugins {
     id "com.android.application"
     id "kotlin-android"
@@ -5,22 +11,22 @@ plugins {
 }
 
 android {
-    namespace = "com.example.speakify_app" // Matches your package name
-    compileSdk = 34 // Compile SDK version
+    namespace "com.example.speakify_app" // Correct namespace declaration
+    compileSdk 34 // Compile SDK version
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17 // Use Java 17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility JavaVersion.VERSION_17 // Use Java 17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = "17" // Match Java 11
+        jvmTarget = "17" // Match Java 17
     }
 
     defaultConfig {
-        applicationId = "com.example.speakify_app" // Application package name
-        minSdk = 21 // Minimum supported SDK version
-        targetSdk = 34 // Target SDK version
+        applicationId "com.example.speakify_app" // Application package name
+        minSdk 21 // Minimum supported SDK version
+        targetSdk 34 // Target SDK version
         versionCode flutter.versionCode.toInteger() // Automatically fetch versionCode from Flutter
         versionName flutter.versionName // Automatically fetch versionName from Flutter
     }
@@ -41,7 +47,7 @@ android {
             storePassword 'ralph eco'  // Keystore password
             keyAlias 'speakify'  // Alias name
             keyPassword 'ralph eco'  // Alias password
-         }
+        }
     }
 
     buildTypes {
@@ -56,12 +62,12 @@ android {
         }
     }
 
-    lintOptions {
+    lint {
         disable 'InvalidPackage' // Suppress invalid package warnings
         checkReleaseBuilds false // Disable lint checks for release builds
     }
 }
 
 flutter {
-    source = "../.." // Path to Flutter module source
+    source "../.." // Path to Flutter module source
 }

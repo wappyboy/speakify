@@ -1,9 +1,22 @@
 import 'package:flutter/material.dart';
-import 'pages/front.dart'; // Import the front.dart file
-import 'pages/scan.dart'; // Import the scan.dart file
+import 'package:provider/provider.dart';
+import 'package:speakify_app/theme.dart';
+import 'package:speakify_app/pages/scan.dart';
+import 'package:speakify_app/pages/settings.dart';
+import 'package:speakify_app/providers/theme_provider.dart';
+import 'package:speakify_app/providers/bluetooth_provider.dart';
+import 'package:speakify_app/pages/front.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => BluetoothProvider()), // ✅ Added BluetoothProvider
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -11,16 +24,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return MaterialApp(
-      title: 'Smart Glove Gesture-to-Speech',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      debugShowCheckedModeBanner: false, // Remove the debug banner
-      home: const FrontPage(), // Use FrontPage as the home page
-      routes: {
-        '/scan': (context) => const ScanPage(), // Define the scan route
+      title: 'Speakify',
+      debugShowCheckedModeBanner: false, // Keeps app looking clean
+      theme: AppTheme.lightTheme, // ✅ Fixed reference
+      darkTheme: AppTheme.darkTheme, // ✅ Fixed reference
+      themeMode: themeProvider.themeMode, // ✅ Controls dark/light mode
+      home: const FrontPage(), // ✅ Ensures front page loads correctly
+      routes: { // ✅ Add this
+        '/scan': (context) => const ScanPage(),
+        '/settings': (context) => const SettingsPage(),
       },
     );
   }
