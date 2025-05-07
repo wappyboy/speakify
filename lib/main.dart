@@ -5,14 +5,18 @@ import 'package:speakify_app/pages/scan.dart';
 import 'package:speakify_app/pages/settings.dart';
 import 'package:speakify_app/providers/theme_provider.dart';
 import 'package:speakify_app/providers/bluetooth_provider.dart';
+import 'package:speakify_app/providers/tts_provider.dart';
 import 'package:speakify_app/pages/front.dart';
+import 'package:speakify_app/pages/about_page.dart';
+import 'package:speakify_app/pages/help_page.dart';
 
 void main() {
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider(create: (_) => BluetoothProvider()), // ✅ Added BluetoothProvider
+        ChangeNotifierProvider(create: (_) => BluetoothProvider()),
+        ChangeNotifierProvider(create: (_) => TtsProvider()),
       ],
       child: const MyApp(),
     ),
@@ -36,6 +40,8 @@ class MyApp extends StatelessWidget {
       routes: { // ✅ Add this
         '/scan': (context) => const ScanPage(),
         '/settings': (context) => const SettingsPage(),
+        '/about': (context) => const AboutPage(),
+        '/help': (context) => const HelpPage(),
       },
     );
   }

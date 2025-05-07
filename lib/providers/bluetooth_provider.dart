@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'dart:typed_data';
+import '../utils/gesture_map.dart';
 
 class BluetoothProvider extends ChangeNotifier {
   FlutterBluetoothSerial bluetooth = FlutterBluetoothSerial.instance;
@@ -8,8 +9,9 @@ class BluetoothProvider extends ChangeNotifier {
   BluetoothConnection? connection;
   bool isConnecting = false;
   bool isConnected = false;
+  bool isGestureRecognitionActive = false;
   String receivedData = '';
-  String _buffer = ''; // Buffer to store incoming data fragments
+  String _buffer = '';
 
   Future<bool> connectToFirstBondedDevice() async {
     try {
@@ -41,45 +43,55 @@ class BluetoothProvider extends ChangeNotifier {
 
       isConnecting = false;
       notifyListeners();
-      return true; // Connection successful
+      return true;
     } catch (e) {
       isConnected = false;
       connection = null;
       isConnecting = false;
       notifyListeners();
-      return false; // Connection failed
+      return false;
     }
   }
 
-  void _handleIncomingData(String newData) {
-    _buffer += newData; // Append new data to buffer
+  void toggleGestureRecognition() {
+    isGestureRecognitionActive = !isGestureRecognitionActive;
+    notifyListeners();
+  }
 
-    // Process only when a full message is received (assuming messages end with '\n')
+  void _handleIncomingData(String newData) {
+    if (!isGestureRecognitionActive) return;
+    _buffer += newData;
+
     while (_buffer.contains('\n')) {
       int newlineIndex = _buffer.indexOf('\n');
       String completeMessage = _buffer.substring(0, newlineIndex).trim();
-      _buffer = _buffer.substring(newlineIndex + 1); // Remove processed message
+      _buffer = _buffer.substring(newlineIndex + 1);
 
       if (completeMessage.isNotEmpty) {
-        receivedData = completeMessage.trim();  // Trim any extra spaces
-        debugPrint('Received data: $receivedData');  // Debugging line to verify
+        receivedData = completeMessage;
+        debugPrint('Received data: $receivedData');
         notifyListeners();
       }
     }
   }
 
   String getTranslatedGesture() {
-  switch (receivedData.toLowerCase()) {  // This converts the received data to lowercase before matching
-    case "straight.":
-      return "Open Hand";
-    case "slightly bent.":
-      return "Hello!";
-    case "moderate bend.":
-      return "Goodbye!";
-    case "fully bent.":
-      return "Be Careful!";
-    default:
+  try {
+    List<String> fingerStates = receivedData.split(' ');
+    if (fingerStates.length < 3 || !fingerStates.every((s) => s.contains(':'))) {
       return "Unknown Gesture";
+    }
+
+    String finger1 = fingerStates[0].split(':')[1].trim().toLowerCase();
+    String finger2 = fingerStates[1].split(':')[1].trim().toLowerCase();
+    String finger3 = fingerStates[2].split(':')[1].trim().toLowerCase();
+
+    debugPrint('Finger1: $finger1, Finger2: $finger2, Finger3: $finger3');
+
+    String key = [finger1, finger2, finger3].join("_");
+    return gestureMap[key] ?? "Unknown Gesture";
+  } catch (e) {
+    return "Unknown Gesture";
   }
 }
 
@@ -90,7 +102,7 @@ class BluetoothProvider extends ChangeNotifier {
     connectedDevice = null;
     isConnected = false;
     receivedData = '';
-    _buffer = ''; // Clear buffer on disconnect
+    _buffer = '';
     notifyListeners();
   }
 }
