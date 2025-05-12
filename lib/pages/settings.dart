@@ -10,6 +10,7 @@ class SettingsPage extends StatelessWidget {
   static final Map<String, String> _languageMap = {
     'en-US': 'English (US)',
     'en-GB': 'English (UK)',
+    'fil-PH': 'Filipino (PH)',
     'es-ES': 'Spanish (Spain)',
     'fr-FR': 'French (France)',
     'de-DE': 'German (Germany)',

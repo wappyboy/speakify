@@ -13,6 +13,14 @@ class BluetoothProvider extends ChangeNotifier {
   String receivedData = '';
   String _buffer = '';
 
+  List<Map<String, String>>? _customGestures;
+
+  // Set custom gestures (called from the UI)
+  void setCustomGestures(List<Map<String, String>> gestures) {
+    _customGestures = gestures;
+    notifyListeners();
+  }
+
   Future<bool> connectToFirstBondedDevice() async {
     try {
       List<BluetoothDevice> bondedDevices = await bluetooth.getBondedDevices();
@@ -78,23 +86,53 @@ class BluetoothProvider extends ChangeNotifier {
   String getTranslatedGesture() {
   try {
     List<String> fingerStates = receivedData.split(' ');
-    if (fingerStates.length < 3 || !fingerStates.every((s) => s.contains(':'))) {
+    if (fingerStates.length != 5 || !fingerStates.every((s) => s.contains(':'))) {
       return "Unknown Gesture";
     }
 
-    String finger1 = fingerStates[0].split(':')[1].trim().toLowerCase();
-    String finger2 = fingerStates[1].split(':')[1].trim().toLowerCase();
-    String finger3 = fingerStates[2].split(':')[1].trim().toLowerCase();
+    Map<String, String> fingerMap = {};
+    for (var state in fingerStates) {
+      var parts = state.split(':');
+      if (parts.length == 2) {
+        fingerMap[parts[0].trim().toLowerCase()] = parts[1].trim().toLowerCase();
+      }
+    }
 
-    debugPrint('Finger1: $finger1, Finger2: $finger2, Finger3: $finger3');
+    List<String> orderedStates = [
+      fingerMap['thumb'] ?? 'unknown',
+      fingerMap['pointing'] ?? 'unknown',
+      fingerMap['middle'] ?? 'unknown',
+      fingerMap['ring'] ?? 'unknown',
+      fingerMap['pinky'] ?? 'unknown',
+    ];
 
-    String key = [finger1, finger2, finger3].join("_");
-    return gestureMap[key] ?? "Unknown Gesture";
+    String key = orderedStates.join("_");
+    debugPrint('Gesture key: $key');
+
+    // 1. Check custom gestures first
+    if (_customGestures != null) {
+      for (final gesture in _customGestures!) {
+        if (gesture['pattern'] == key) {
+          debugPrint('Matched custom gesture: ${gesture['label']}');
+          return gesture['label'] ?? "Unknown Gesture";
+        }
+      }
+    }
+
+    // 2. Fallback to default gestures
+    final defaultLabel = gestureMap[key];
+    if (defaultLabel != null) {
+      debugPrint('Matched default gesture: $defaultLabel');
+      return defaultLabel;
+    }
+
+    // 3. No match found
+    return "Unknown Gesture";
   } catch (e) {
+    debugPrint('Error in getTranslatedGesture: $e');
     return "Unknown Gesture";
   }
 }
-
 
   Future<void> disconnect() async {
     connection?.close();
